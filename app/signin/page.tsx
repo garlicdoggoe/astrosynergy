@@ -3,6 +3,7 @@
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react"
 import { SignInButton } from "@clerk/nextjs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
@@ -36,31 +37,23 @@ function RedirectToDashboard() {
 
 function SignInForm() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Welcome to Trading Journal</CardTitle>
-          <CardDescription>
-            Sign in to access your trading analytics and journal entries
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-sm border-muted">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-2xl font-semibold tracking-tight">AstroSynergy</CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
+            A Simple Trading Journal.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <SignInButton 
-            mode="modal"
-            appearance={{
-              elements: {
-                formButtonPrimary: "bg-primary hover:bg-primary/90 text-primary-foreground",
-              }
-            }}
-            forceRedirectUrl="/dashboard"
-            signUpForceRedirectUrl="/dashboard"
-          />
-          
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              By signing in, you agree to our terms of service and privacy policy.
-            </p>
-          </div>
+        <CardContent className="space-y-6">
+          <SignInButton mode="modal" forceRedirectUrl="/dashboard" signUpForceRedirectUrl="/dashboard">
+            <Button className="w-full" size="lg">
+              Sign in
+            </Button>
+          </SignInButton>
+          <p className="text-center text-xs text-muted-foreground">
+            By continuing you agree to our Terms and Privacy Policy.
+          </p>
         </CardContent>
       </Card>
     </div>

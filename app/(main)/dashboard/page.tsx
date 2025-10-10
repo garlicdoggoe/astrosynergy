@@ -19,7 +19,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Overview of your trading performance</p>
         </div>
-        <Tabs value={timeframe} onValueChange={(v) => setTimeframe(v as typeof timeframe)}>
+        {/* <Tabs value={timeframe} onValueChange={(v) => setTimeframe(v as typeof timeframe)}>
           <TabsList>
             <TabsTrigger value="day">Day</TabsTrigger>
             <TabsTrigger value="week">Week</TabsTrigger>
@@ -27,7 +27,7 @@ export default function DashboardPage() {
             <TabsTrigger value="year">Year</TabsTrigger>
             <TabsTrigger value="all">All Time</TabsTrigger>
           </TabsList>
-        </Tabs>
+        </Tabs> */}
       </div>
 
       {/* Account Balance and Risk Management */}

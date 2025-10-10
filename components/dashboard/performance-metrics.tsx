@@ -24,12 +24,14 @@ export function PerformanceMetrics({ timeframe }: PerformanceMetricsProps) {
   const avgWin = totalProfit / winningTrades.length || 0
   const avgLoss = totalLoss / losingTrades.length || 0
 
-  // Calculate max drawdown (simplified)
+  // Calculate max drawdown from cumulative P&L series
+  const sortedTrades = [...trades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
   let maxDrawdown = 0
   let peak = 0
   let runningTotal = 0
 
-  trades.forEach((trade) => {
+  sortedTrades.forEach((trade) => {
     runningTotal += trade.profitLoss
     if (runningTotal > peak) {
       peak = runningTotal

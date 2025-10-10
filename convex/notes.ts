@@ -4,7 +4,10 @@ import { mutation, query } from "./_generated/server"
 export const getNoteByDate = query({
   args: { date: v.string() },
   handler: async (ctx, args) => {
-    const userId = "demo-user"
+    // Get authenticated user identity
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const note = await ctx.db
       .query("notes")
@@ -18,7 +21,10 @@ export const getNoteByDate = query({
 export const getAllNotes = query({
   args: {},
   handler: async (ctx) => {
-    const userId = "demo-user"
+    // Get authenticated user identity
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const notes = await ctx.db
       .query("notes")
@@ -36,7 +42,10 @@ export const saveNote = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = "demo-user"
+    // Get authenticated user identity
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const existing = await ctx.db
       .query("notes")
@@ -44,11 +53,13 @@ export const saveNote = mutation({
       .first()
 
     if (existing) {
+      // Update existing note
       await ctx.db.patch(existing._id, {
         content: args.content,
         updatedAt: Date.now(),
       })
     } else {
+      // Create new note
       await ctx.db.insert("notes", {
         userId,
         date: args.date,

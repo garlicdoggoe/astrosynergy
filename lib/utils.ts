@@ -28,12 +28,11 @@ export function getMonthDays(year: number, month: number): Date[] {
   const lastDay = new Date(year, month + 1, 0)
   const days: Date[] = []
 
-  // Convert JavaScript's Sunday-first (0=Sunday) to Monday-first (0=Monday)
+  // Use JavaScript's native Sunday-first (0=Sunday) layout
   // JavaScript: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-  // Monday-first: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
-  const firstDayOfWeek = (firstDay.getDay() + 6) % 7
+  const firstDayOfWeek = firstDay.getDay()
 
-  // Add days from previous month to fill the first week (Monday-first)
+  // Add days from previous month to fill the first week (Sunday-first)
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
     const date = new Date(year, month, -i)
     days.push(date)

@@ -3,7 +3,9 @@ import { mutation, query } from "./_generated/server"
 
 export const getPortfolio = query({
   handler: async (ctx) => {
-    const userId = "demo-user"
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     // Get portfolio settings (initial balance and risk percentage)
     const portfolio = await ctx.db
@@ -38,7 +40,9 @@ export const getPortfolio = query({
 // Calculate total profit/loss from all trades for the user
 export const getTotalPnL = query({
   handler: async (ctx) => {
-    const userId = "demo-user"
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const trades = await ctx.db
       .query("trades")
@@ -59,7 +63,9 @@ export const updatePortfolio = mutation({
     riskPercentage: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = "demo-user"
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const existing = await ctx.db
       .query("portfolio")

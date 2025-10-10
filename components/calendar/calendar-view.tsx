@@ -15,7 +15,7 @@ export function CalendarView({ currentDate, onDateClick }: CalendarViewProps) {
   const trades = useQuery(api.trades.getAllTrades) ?? []
   
   const days = getMonthDays(currentDate.getFullYear(), currentDate.getMonth())
-  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+  const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
   const getDailyPnL = (date: Date): number => {
     const dateStr = formatDateISO(date)
@@ -56,7 +56,7 @@ export function CalendarView({ currentDate, onDateClick }: CalendarViewProps) {
               onClick={() => onDateClick(dateStr)}
               className={cn(
                 "relative min-h-[100px] p-3 rounded-lg border transition-all hover:shadow-md",
-                isCurrentMonth(date) ? "bg-card" : "bg-muted/30",
+                isCurrentMonth(date) ? "bg-card" : "bg-muted/100",
                 pnl > 0 && "border-green-500/50 bg-green-500/5",
                 pnl < 0 && "border-red-500/50 bg-red-500/5",
                 isToday && "ring-2 ring-primary",

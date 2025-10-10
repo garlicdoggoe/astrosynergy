@@ -10,7 +10,9 @@ export const addTrade = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = "demo-user" // Replace with actual auth
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const tradeId = await ctx.db.insert("trades", {
       userId,
@@ -36,7 +38,14 @@ export const updateTrade = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
+
     const { id, ...updates } = args
+    const existing = await ctx.db.get(id)
+    if (!existing) throw new Error("Not found")
+    if (existing.userId !== userId) throw new Error("Forbidden")
     await ctx.db.patch(id, updates)
   },
 })
@@ -44,6 +53,13 @@ export const updateTrade = mutation({
 export const deleteTrade = mutation({
   args: { id: v.id("trades") },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
+
+    const existing = await ctx.db.get(args.id)
+    if (!existing) throw new Error("Not found")
+    if (existing.userId !== userId) throw new Error("Forbidden")
     await ctx.db.delete(args.id)
   },
 })
@@ -51,7 +67,9 @@ export const deleteTrade = mutation({
 export const getTradesByDate = query({
   args: { date: v.string() },
   handler: async (ctx, args) => {
-    const userId = "demo-user"
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const trades = await ctx.db
       .query("trades")
@@ -64,7 +82,9 @@ export const getTradesByDate = query({
 
 export const getAllTrades = query({
   handler: async (ctx) => {
-    const userId = "demo-user"
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const trades = await ctx.db
       .query("trades")
@@ -81,7 +101,9 @@ export const getTradesByDateRange = query({
     endDate: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = "demo-user"
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Unauthorized")
+    const userId = identity.subject
 
     const trades = await ctx.db
       .query("trades")

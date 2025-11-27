@@ -7,6 +7,7 @@ import { TickerPerformance } from "@/components/analytics/ticker-performance"
 import { TimeOfDayAnalysis } from "@/components/analytics/time-of-day-analysis"
 import { MonthlyBreakdown } from "@/components/analytics/monthly-breakdown"
 import { RiskRewardScatter } from "@/components/analytics/risk-reward-scatter"
+import { TradingMetrics } from "@/components/analytics/trading-metrics"
 
 export default function AnalyticsPage() {
   const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">("month")
@@ -27,6 +28,8 @@ export default function AnalyticsPage() {
           </TabsList>
         </Tabs>
       </div>
+
+      <TradingMetrics timeframe={timeframe} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WinLossChart />

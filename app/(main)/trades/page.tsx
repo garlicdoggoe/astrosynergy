@@ -45,7 +45,7 @@ export default function TradesPage() {
   const [pageSize, setPageSize] = useState<10 | 30 | 50>(10)
   const [winLossFilter, setWinLossFilter] = useState<"all" | "winners" | "losers">("all")
   const [manageColumnsOpen, setManageColumnsOpen] = useState(false)
-  const [imageSize, setImageSize] = useState<"small" | "medium" | "large">("small")
+  const [imageSize, setImageSize] = useState<"small" | "medium" | "large" | "xlarge">("small")
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange())
   const [filterMode, setFilterMode] = useState<"range" | "all">("range")
 

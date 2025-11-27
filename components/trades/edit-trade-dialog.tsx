@@ -21,13 +21,14 @@ interface EditTradeDialogProps {
     type: "string" | "number" | "image"
     order: number
   }>
-  imageSize: "small" | "medium" | "large"
+  imageSize: "small" | "medium" | "large" | "xlarge"
 }
 
 const IMAGE_SIZE_MAP = {
   small: 48,
   medium: 72,
   large: 96,
+  xlarge: 128,
 } as const
 
 export function EditTradeDialog({ trade, onClose, customColumns = [], imageSize }: EditTradeDialogProps) {
@@ -270,13 +271,19 @@ function ImageField({
   onRemove: () => void
   inputRef: (el: HTMLInputElement | null) => void
   onPreparePaste: () => void
-  imageSize: "small" | "medium" | "large"
+  imageSize: "small" | "medium" | "large" | "xlarge"
 }) {
   const imageUrl = useQuery(api.files.getImageUrl, fileId ? { fileId } : "skip")
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const dimension = IMAGE_SIZE_MAP[imageSize]
   const iconClass =
-    imageSize === "small" ? "h-4 w-4 mr-2" : imageSize === "medium" ? "h-5 w-5 mr-2" : "h-6 w-6 mr-2"
+    imageSize === "small"
+      ? "h-4 w-4 mr-2"
+      : imageSize === "medium"
+        ? "h-5 w-5 mr-2"
+        : imageSize === "large"
+          ? "h-6 w-6 mr-2"
+          : "h-7 w-7 mr-2"
 
   return (
     <div className="space-y-2">

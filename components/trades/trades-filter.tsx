@@ -25,8 +25,8 @@ interface TradesFiltersProps {
   onPageSizeChange: (value: 10 | 30 | 50) => void
   winLossFilter: "all" | "winners" | "losers"
   onWinLossFilterChange: (value: "all" | "winners" | "losers") => void
-  imageSize: "small" | "medium" | "large"
-  onImageSizeChange: (value: "small" | "medium" | "large") => void
+  imageSize: "small" | "medium" | "large" | "xlarge"
+  onImageSizeChange: (value: "small" | "medium" | "large" | "xlarge") => void
   onManageColumns: () => void
 }
 
@@ -128,7 +128,7 @@ export function TradesFilters({
 
       <div className="space-y-2">
         <Label>Image Size</Label>
-        <Select value={imageSize} onValueChange={(v) => onImageSizeChange(v as "small" | "medium" | "large")}>
+        <Select value={imageSize} onValueChange={(v) => onImageSizeChange(v as "small" | "medium" | "large" | "xlarge")}>
           <SelectTrigger className="w-[180px]">
             <SelectValue />
           </SelectTrigger>
@@ -136,6 +136,7 @@ export function TradesFilters({
             <SelectItem value="small">Small</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="large">Large</SelectItem>
+            <SelectItem value="xlarge">Extra Large</SelectItem>
           </SelectContent>
         </Select>
       </div>

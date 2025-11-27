@@ -16,6 +16,7 @@ const IMAGE_SIZE_MAP = {
   small: 48,
   medium: 72,
   large: 96,
+  xlarge: 128,
 } as const
 
 // Component to handle image cell rendering with URL fetching
@@ -31,7 +32,7 @@ function ImageCell({
   columnName: string
   onUpload: () => void
   onPreparePaste?: () => void
-  size: "small" | "medium" | "large"
+  size: "small" | "medium" | "large" | "xlarge"
   children: React.ReactNode
 }) {
   const imageUrl = useQuery(
@@ -40,7 +41,13 @@ function ImageCell({
   )
   const dimension = IMAGE_SIZE_MAP[size]
   const iconClass =
-    size === "small" ? "h-4 w-4" : size === "medium" ? "h-5 w-5" : "h-6 w-6"
+    size === "small"
+      ? "h-4 w-4"
+      : size === "medium"
+        ? "h-5 w-5"
+        : size === "large"
+          ? "h-6 w-6"
+          : "h-7 w-7"
 
   return (
     <TableCell
@@ -94,7 +101,7 @@ interface TradesTableProps {
     type: "string" | "number" | "image"
     order: number
   }>
-  imageSize: "small" | "medium" | "large"
+  imageSize: "small" | "medium" | "large" | "xlarge"
 }
 
 export function TradesTable({
@@ -144,12 +151,12 @@ export function TradesTable({
     }
 
     return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [dateRange, winLossFilter, trades])
+  }, [dateRange, filterMode, winLossFilter, trades])
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [dateRange, winLossFilter, pageSize])
+  }, [dateRange, filterMode, winLossFilter, pageSize])
 
   // Pagination
   const totalPages = Math.ceil(filteredTrades.length / pageSize)
@@ -401,11 +408,11 @@ export function TradesTable({
                 <TableHead>Time</TableHead>
                 <TableHead>Ticker</TableHead>
                 <TableHead>P&L</TableHead>
-                <TableHead>Note</TableHead>
                 {/* Render custom column headers */}
                 {sortedColumns.map((column) => (
                   <TableHead key={column.columnId}>{column.name}</TableHead>
                 ))}
+                <TableHead>Note</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -433,9 +440,9 @@ export function TradesTable({
                         {formatCurrency(trade.profitLoss)}
                       </span>
                     </TableCell>
-                    <TableCell className="max-w-[300px] truncate">{trade.note || "-"}</TableCell>
                     {/* Render custom column cells */}
                     {sortedColumns.map((column) => renderCustomCell(trade, column))}
+                    <TableCell className="max-w-[300px] truncate">{trade.note || "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" onClick={() => setEditingTrade(trade)}>

@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { useTheme } from "next-themes"
+import { formatTime } from "@/lib/utils"
 
 export function TimeOfDayAnalysis() {
   // Get all trades from Convex
@@ -25,12 +26,18 @@ export function TimeOfDayAnalysis() {
   )
 
   const data = Object.entries(hourlyStats)
-    .map(([hour, stats]) => ({
-      hour: `${hour}:00`,
-      pnl: stats.total,
-      trades: stats.count,
-    }))
-    .sort((a, b) => Number.parseInt(a.hour) - Number.parseInt(b.hour))
+    .map(([hour, stats]) => {
+      // Convert hour number to 24-hour format string (HH:00) for formatTime function
+      const hourStr = Number.parseInt(hour).toString().padStart(2, '0')
+      const timeStr = `${hourStr}:00`
+      return {
+        hour: formatTime(timeStr), // Format as 12-hour with AM/PM
+        hourNum: Number.parseInt(hour), // Keep numeric hour for sorting
+        pnl: stats.total,
+        trades: stats.count,
+      }
+    })
+    .sort((a, b) => a.hourNum - b.hourNum) // Sort by numeric hour value
 
   const colorTheme = theme === "dark" ? "#ffffff" : "#000000"
 

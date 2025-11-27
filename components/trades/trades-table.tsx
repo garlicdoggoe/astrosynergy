@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency, formatDate, formatTime } from "@/lib/utils"
 import { ChevronLeft, ChevronRight, Edit2, Trash2 } from "lucide-react"
 import { EditTradeDialog } from "@/components/trades/edit-trade-dialog"
 
@@ -127,7 +127,7 @@ export function TradesTable({ timeFilter, pageSize }: TradesTableProps) {
                 currentTrades.map((trade) => (
                   <TableRow key={trade._id}>
                     <TableCell className="font-medium">{formatDate(trade.date)}</TableCell>
-                    <TableCell>{trade.time}</TableCell>
+                    <TableCell>{formatTime(trade.time)}</TableCell>
                     <TableCell>
                       <span className="font-semibold">{trade.ticker}</span>
                     </TableCell>

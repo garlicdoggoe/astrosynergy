@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency, formatDate, formatTime } from "@/lib/utils"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Plus, Trash2 } from "lucide-react"
@@ -105,7 +105,7 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-3">
                         <span className="font-semibold text-foreground">{trade.ticker}</span>
-                        <span className="text-sm text-muted-foreground">{trade.time}</span>
+                        <span className="text-sm text-muted-foreground">{formatTime(trade.time)}</span>
                         <span
                           className={`font-semibold ${
                             trade.profitLoss > 0

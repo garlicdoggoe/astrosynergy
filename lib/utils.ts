@@ -61,3 +61,41 @@ export function formatDateISO(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
+
+/**
+ * Converts 24-hour format time string (HH:MM) to 12-hour format with AM/PM
+ * Examples: "14:30" → "2:30 PM", "09:15" → "9:15 AM", "00:00" → "12:00 AM", "12:00" → "12:00 PM"
+ * @param timeString - Time in 24-hour format (HH:MM)
+ * @returns Time in 12-hour format with AM/PM indicator
+ */
+export function formatTime(timeString: string): string {
+  // Parse the time string (HH:MM format)
+  const [hoursStr, minutesStr] = timeString.split(":")
+  const hours = Number.parseInt(hoursStr, 10)
+  const minutes = minutesStr || "00"
+
+  // Determine AM/PM and convert hour to 12-hour format
+  let hour12: number
+  let period: string
+
+  if (hours === 0) {
+    // Midnight (00:xx) → 12:xx AM
+    hour12 = 12
+    period = "AM"
+  } else if (hours === 12) {
+    // Noon (12:xx) → 12:xx PM
+    hour12 = 12
+    period = "PM"
+  } else if (hours < 12) {
+    // Morning hours (01:xx - 11:xx) → 1:xx AM - 11:xx AM
+    hour12 = hours
+    period = "AM"
+  } else {
+    // Afternoon/evening hours (13:xx - 23:xx) → 1:xx PM - 11:xx PM
+    hour12 = hours - 12
+    period = "PM"
+  }
+
+  // Format: hour (no leading zero) + minutes + AM/PM
+  return `${hour12}:${minutes} ${period}`
+}

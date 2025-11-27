@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -13,9 +13,10 @@ import { EditTradeDialog } from "@/components/trades/edit-trade-dialog"
 interface TradesTableProps {
   timeFilter: "day" | "week" | "month"
   pageSize: 10 | 30 | 50
+  winLossFilter: "all" | "winners" | "losers"
 }
 
-export function TradesTable({ timeFilter, pageSize }: TradesTableProps) {
+export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [editingTrade, setEditingTrade] = useState<any>(null)
   
@@ -23,7 +24,7 @@ export function TradesTable({ timeFilter, pageSize }: TradesTableProps) {
   const trades = useQuery(api.trades.getAllTrades) ?? []
   const deleteTrade = useMutation(api.trades.deleteTrade)
 
-  // Filter trades based on time period
+  // Filter trades based on time period and win/loss filter
   const filteredTrades = useMemo(() => {
     const now = new Date()
     let startDate: Date
@@ -41,10 +42,28 @@ export function TradesTable({ timeFilter, pageSize }: TradesTableProps) {
         break
     }
 
-    return trades
-      .filter((trade) => new Date(trade.date) >= startDate)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [timeFilter, trades])
+    let filtered = trades.filter((trade) => new Date(trade.date) >= startDate)
+
+    // Apply win/loss filter
+    switch (winLossFilter) {
+      case "winners":
+        filtered = filtered.filter((trade) => trade.profitLoss > 0)
+        break
+      case "losers":
+        filtered = filtered.filter((trade) => trade.profitLoss < 0)
+        break
+      case "all":
+        // No additional filtering needed
+        break
+    }
+
+    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }, [timeFilter, winLossFilter, trades])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [timeFilter, winLossFilter, pageSize])
 
   // Pagination
   const totalPages = Math.ceil(filteredTrades.length / pageSize)

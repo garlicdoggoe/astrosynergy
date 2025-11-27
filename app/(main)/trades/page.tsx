@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 export default function TradesPage() {
   const [timeFilter, setTimeFilter] = useState<"day" | "week" | "month">("week")
   const [pageSize, setPageSize] = useState<10 | 30 | 50>(10)
+  const [winLossFilter, setWinLossFilter] = useState<"all" | "winners" | "losers">("all")
 
   return (
     <div className="space-y-6">
@@ -22,10 +23,12 @@ export default function TradesPage() {
           onTimeFilterChange={setTimeFilter}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
+          winLossFilter={winLossFilter}
+          onWinLossFilterChange={setWinLossFilter}
         />
       </Card>
 
-      <TradesTable timeFilter={timeFilter} pageSize={pageSize} />
+      <TradesTable timeFilter={timeFilter} pageSize={pageSize} winLossFilter={winLossFilter} />
     </div>
   )
 }

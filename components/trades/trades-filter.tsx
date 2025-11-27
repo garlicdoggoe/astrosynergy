@@ -8,9 +8,18 @@ interface TradesFiltersProps {
   onTimeFilterChange: (value: "day" | "week" | "month") => void
   pageSize: 10 | 30 | 50
   onPageSizeChange: (value: 10 | 30 | 50) => void
+  winLossFilter: "all" | "winners" | "losers"
+  onWinLossFilterChange: (value: "all" | "winners" | "losers") => void
 }
 
-export function TradesFilters({ timeFilter, onTimeFilterChange, pageSize, onPageSizeChange }: TradesFiltersProps) {
+export function TradesFilters({ 
+  timeFilter, 
+  onTimeFilterChange, 
+  pageSize, 
+  onPageSizeChange,
+  winLossFilter,
+  onWinLossFilterChange
+}: TradesFiltersProps) {
   return (
     <div className="flex flex-wrap items-end gap-4">
       <div className="space-y-2">
@@ -23,6 +32,20 @@ export function TradesFilters({ timeFilter, onTimeFilterChange, pageSize, onPage
             <SelectItem value="day">Today</SelectItem>
             <SelectItem value="week">This Week</SelectItem>
             <SelectItem value="month">This Month</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Win/Loss Filter</Label>
+        <Select value={winLossFilter} onValueChange={(v) => onWinLossFilterChange(v as "all" | "winners" | "losers")}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Trades</SelectItem>
+            <SelectItem value="winners">Winners Only</SelectItem>
+            <SelectItem value="losers">Losers Only</SelectItem>
           </SelectContent>
         </Select>
       </div>

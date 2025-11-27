@@ -36,11 +36,11 @@ export default function AnalyticsPage() {
         <TickerPerformance />
       </div>
 
-      <TimeOfDayAnalysis />
+      <RiskRewardScatter />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyBreakdown />
-        <RiskRewardScatter />
+        <TimeOfDayAnalysis />
       </div>
     </div>
   )

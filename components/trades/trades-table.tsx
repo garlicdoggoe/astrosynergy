@@ -84,6 +84,7 @@ type DateRangeValue = {
 
 interface TradesTableProps {
   dateRange: DateRangeValue
+  filterMode: "range" | "all"
   pageSize: 10 | 30 | 50
   winLossFilter: "all" | "winners" | "losers"
   customColumns?: Array<{
@@ -98,6 +99,7 @@ interface TradesTableProps {
 
 export function TradesTable({
   dateRange,
+  filterMode,
   pageSize,
   winLossFilter,
   customColumns = [],
@@ -118,13 +120,15 @@ export function TradesTable({
 
   // Filter trades based on selected date range and win/loss filter
   const filteredTrades = useMemo(() => {
-    const startDate = dateRange.start
-    const endDate = dateRange.end
-
-    let filtered = trades.filter((trade) => {
-      const tradeDate = new Date(trade.date)
-      return tradeDate >= startDate && tradeDate <= endDate
-    })
+    let filtered = trades
+    if (filterMode === "range") {
+      const startDate = dateRange.start
+      const endDate = dateRange.end
+      filtered = trades.filter((trade) => {
+        const tradeDate = new Date(trade.date)
+        return tradeDate >= startDate && tradeDate <= endDate
+      })
+    }
 
     // Apply win/loss filter
     switch (winLossFilter) {

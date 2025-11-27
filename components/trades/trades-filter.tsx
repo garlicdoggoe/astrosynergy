@@ -15,10 +15,12 @@ type DateRangeValue = {
 
 interface TradesFiltersProps {
   dateRange: DateRangeValue
+  filterMode: "range" | "all"
   onStartDateChange: (value: string) => void
   onEndDateChange: (value: string) => void
   onSelectWeek: () => void
   onSelectMonth: () => void
+  onShowAll: () => void
   pageSize: 10 | 30 | 50
   onPageSizeChange: (value: 10 | 30 | 50) => void
   winLossFilter: "all" | "winners" | "losers"
@@ -30,10 +32,12 @@ interface TradesFiltersProps {
 
 export function TradesFilters({ 
   dateRange,
+  filterMode,
   onStartDateChange,
   onEndDateChange,
   onSelectWeek,
   onSelectMonth,
+  onShowAll,
   pageSize, 
   onPageSizeChange,
   winLossFilter,
@@ -43,7 +47,10 @@ export function TradesFilters({
   onManageColumns
 }: TradesFiltersProps) {
 
-  const rangeLabel = `${format(dateRange.start, "MMM d, yyyy")} - ${format(dateRange.end, "MMM d, yyyy")}`
+  const rangeLabel =
+    filterMode === "all"
+      ? "All trades (most recent first)"
+      : `${format(dateRange.start, "MMM d, yyyy")} - ${format(dateRange.end, "MMM d, yyyy")}`
 
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -63,6 +70,7 @@ export function TradesFilters({
               onChange={(e) => onStartDateChange(e.target.value)}
               max={format(dateRange.end, "yyyy-MM-dd")}
               className="w-[160px]"
+              disabled={filterMode === "all"}
             />
             <Input
               type="date"
@@ -70,9 +78,13 @@ export function TradesFilters({
               onChange={(e) => onEndDateChange(e.target.value)}
               min={format(dateRange.start, "yyyy-MM-dd")}
               className="w-[160px]"
+              disabled={filterMode === "all"}
             />
           </div>
           <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={onShowAll}>
+              All
+            </Button>
             <Button variant="secondary" size="sm" onClick={onSelectWeek}>
               This Week
             </Button>
@@ -80,7 +92,9 @@ export function TradesFilters({
               This Month
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Select up to 30 days inclusive.</p>
+          {filterMode === "range" && (
+            <p className="text-xs text-muted-foreground">Select up to 30 days inclusive.</p>
+          )}
         </div>
       </div>
 

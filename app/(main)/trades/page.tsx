@@ -47,11 +47,13 @@ export default function TradesPage() {
   const [manageColumnsOpen, setManageColumnsOpen] = useState(false)
   const [imageSize, setImageSize] = useState<"small" | "medium" | "large">("small")
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange())
+  const [filterMode, setFilterMode] = useState<"range" | "all">("range")
 
   // Fetch custom columns for the current user
   const customColumns = useQuery(api.trades.getCustomColumns) ?? []
 
   const updateRange = (next: DateRange) => {
+    setFilterMode("range")
     setDateRange(enforceRangeLimit(next))
   }
 
@@ -81,6 +83,10 @@ export default function TradesPage() {
     updateRange({ start, end })
   }
 
+  const handleShowAll = () => {
+    setFilterMode("all")
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -95,6 +101,8 @@ export default function TradesPage() {
           onEndDateChange={handleEndDateChange}
           onSelectWeek={setWeekRange}
           onSelectMonth={setMonthRange}
+          onShowAll={handleShowAll}
+          filterMode={filterMode}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
           winLossFilter={winLossFilter}
@@ -107,6 +115,7 @@ export default function TradesPage() {
 
       <TradesTable
         dateRange={dateRange}
+        filterMode={filterMode}
         pageSize={pageSize}
         winLossFilter={winLossFilter}
         customColumns={customColumns}

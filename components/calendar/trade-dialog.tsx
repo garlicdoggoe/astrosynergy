@@ -11,6 +11,7 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Plus, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface TradeDialogProps {
   selectedDate: string | null
@@ -21,6 +22,7 @@ interface Trade {
   _id: string
   ticker: string
   time: string
+  type: "long" | "short"
   profitLoss: number
   note?: string
 }
@@ -29,6 +31,7 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
   const [newTrade, setNewTrade] = useState({
     ticker: "",
     time: new Date().toTimeString().slice(0, 5),
+    type: "long" as "long" | "short",
     profitLoss: "",
     note: "",
   })
@@ -48,6 +51,7 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
       ticker: newTrade.ticker.toUpperCase(),
       date: selectedDate,
       time: newTrade.time,
+      type: newTrade.type,
       profitLoss: Number.parseFloat(newTrade.profitLoss),
       note: newTrade.note || undefined,
     })
@@ -55,6 +59,7 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
     setNewTrade({
       ticker: "",
       time: new Date().toTimeString().slice(0, 5),
+      type: "long",
       profitLoss: "",
       note: "",
     })
@@ -106,6 +111,9 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
                       <div className="flex items-center gap-3">
                         <span className="font-semibold text-foreground">{trade.ticker}</span>
                         <span className="text-sm text-muted-foreground">{formatTime(trade.time)}</span>
+                        <span className="text-xs font-semibold uppercase rounded-full px-2 py-0.5 bg-muted text-muted-foreground">
+                          {trade.type}
+                        </span>
                         <span
                           className={`font-semibold ${
                             trade.profitLoss > 0
@@ -148,6 +156,21 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
                   value={newTrade.time}
                   onChange={(e) => setNewTrade({ ...newTrade, time: e.target.value })}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Select
+                  value={newTrade.type}
+                  onValueChange={(value) => setNewTrade({ ...newTrade, type: value as "long" | "short" })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="long">Long</SelectItem>
+                    <SelectItem value="short">Short</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">

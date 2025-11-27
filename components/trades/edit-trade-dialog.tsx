@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
@@ -40,6 +41,7 @@ export function EditTradeDialog({ trade, onClose, customColumns = [], imageSize 
     ticker: "",
     date: "",
     time: "",
+    type: "long" as "long" | "short",
     profitLoss: "",
     note: "",
   })
@@ -55,6 +57,7 @@ export function EditTradeDialog({ trade, onClose, customColumns = [], imageSize 
         ticker: trade.ticker,
         date: trade.date,
         time: trade.time,
+        type: trade.type || "long",
         profitLoss: trade.profitLoss.toString(),
         note: trade.note || "",
       })
@@ -70,6 +73,7 @@ export function EditTradeDialog({ trade, onClose, customColumns = [], imageSize 
         ticker: formData.ticker,
         date: formData.date,
         time: formData.time,
+        type: formData.type,
         profitLoss: Number.parseFloat(formData.profitLoss),
         note: formData.note,
         customData: Object.keys(customData).length > 0 ? customData : undefined,
@@ -171,6 +175,21 @@ export function EditTradeDialog({ trade, onClose, customColumns = [], imageSize 
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Type</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => setFormData({ ...formData, type: value as "long" | "short" })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="long">Long</SelectItem>
+                  <SelectItem value="short">Short</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-profitLoss">P&L ($)</Label>

@@ -408,6 +408,7 @@ export function TradesTable({
               <TableRow>
                 <TableHead className="text-center">Date</TableHead>
                 <TableHead className="text-center">Time</TableHead>
+                <TableHead className="text-center">Type</TableHead>
                 <TableHead className="text-center">Ticker</TableHead>
                 <TableHead className="text-center">P&L</TableHead>
                 {/* Render custom column headers */}
@@ -423,7 +424,7 @@ export function TradesTable({
             <TableBody>
               {currentTrades.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6 + sortedColumns.length} className="text-center text-muted-foreground py-8">
+                   <TableCell colSpan={7 + sortedColumns.length} className="text-center text-muted-foreground py-8">
                     No trades found for this period
                   </TableCell>
                 </TableRow>
@@ -432,6 +433,11 @@ export function TradesTable({
                   <TableRow key={trade._id}>
                     <TableCell className="text-center font-medium">{formatDate(trade.date)}</TableCell>
                     <TableCell className="text-center">{formatTime(trade.time)}</TableCell>
+                    <TableCell className="text-center">
+                      <span className="uppercase text-xs font-semibold rounded-full px-2 py-0.5 bg-muted text-muted-foreground">
+                        {trade.type ? trade.type.toUpperCase() : "-"}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-center">
                       <span className="font-semibold">{trade.ticker}</span>
                     </TableCell>

@@ -7,6 +7,7 @@ export default defineSchema({
     ticker: v.string(),
     date: v.string(), // ISO date string (YYYY-MM-DD)
     time: v.string(), // HH:MM format
+    type: v.optional(v.union(v.literal("long"), v.literal("short"))),
     profitLoss: v.number(),
     note: v.optional(v.string()),
     customData: v.optional(v.any()), // Stores custom column values: { [columnId]: string | number | Id<"_storage"> }

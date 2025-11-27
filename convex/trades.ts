@@ -7,6 +7,7 @@ export const addTrade = mutation({
     ticker: v.string(),
     date: v.string(),
     time: v.string(),
+    type: v.optional(v.union(v.literal("long"), v.literal("short"))),
     profitLoss: v.number(),
     note: v.optional(v.string()),
     customData: v.optional(v.any()), // Custom column values
@@ -21,6 +22,7 @@ export const addTrade = mutation({
       ticker: args.ticker,
       date: args.date,
       time: args.time,
+      type: args.type ?? "long",
       profitLoss: args.profitLoss,
       note: args.note,
       customData: args.customData,
@@ -37,6 +39,7 @@ export const updateTrade = mutation({
     ticker: v.optional(v.string()),
     date: v.optional(v.string()),
     time: v.optional(v.string()),
+    type: v.optional(v.union(v.literal("long"), v.literal("short"))),
     profitLoss: v.optional(v.number()),
     note: v.optional(v.string()),
     customData: v.optional(v.any()), // Custom column values

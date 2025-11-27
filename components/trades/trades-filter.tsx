@@ -2,6 +2,8 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Settings2 } from "lucide-react"
 
 interface TradesFiltersProps {
   timeFilter: "day" | "week" | "month"
@@ -10,6 +12,9 @@ interface TradesFiltersProps {
   onPageSizeChange: (value: 10 | 30 | 50) => void
   winLossFilter: "all" | "winners" | "losers"
   onWinLossFilterChange: (value: "all" | "winners" | "losers") => void
+  imageSize: "small" | "medium" | "large"
+  onImageSizeChange: (value: "small" | "medium" | "large") => void
+  onManageColumns: () => void
 }
 
 export function TradesFilters({ 
@@ -18,7 +23,10 @@ export function TradesFilters({
   pageSize, 
   onPageSizeChange,
   winLossFilter,
-  onWinLossFilterChange
+  onWinLossFilterChange,
+  imageSize,
+  onImageSizeChange,
+  onManageColumns
 }: TradesFiltersProps) {
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -62,6 +70,27 @@ export function TradesFilters({
             <SelectItem value="50">50 trades</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Image Size</Label>
+        <Select value={imageSize} onValueChange={(v) => onImageSizeChange(v as "small" | "medium" | "large")}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="small">Small</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="large">Large</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex items-end">
+        <Button variant="outline" onClick={onManageColumns}>
+          <Settings2 className="h-4 w-4 mr-2" />
+          Manage Columns
+        </Button>
       </div>
     </div>
   )

@@ -1,28 +1,115 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils"
-import { ChevronLeft, ChevronRight, Edit2, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit2, Trash2, Upload } from "lucide-react"
 import { EditTradeDialog } from "@/components/trades/edit-trade-dialog"
+import { Id } from "@/convex/_generated/dataModel"
+
+const IMAGE_SIZE_MAP = {
+  small: 48,
+  medium: 72,
+  large: 96,
+} as const
+
+// Component to handle image cell rendering with URL fetching
+function ImageCell({
+  fileId,
+  columnName,
+  onUpload,
+  onPreparePaste,
+  size,
+  children,
+}: {
+  fileId: Id<"_storage"> | undefined
+  columnName: string
+  onUpload: () => void
+  onPreparePaste?: () => void
+  size: "small" | "medium" | "large"
+  children: React.ReactNode
+}) {
+  const imageUrl = useQuery(
+    api.files.getImageUrl,
+    fileId ? { fileId } : "skip"
+  )
+  const dimension = IMAGE_SIZE_MAP[size]
+  const iconClass =
+    size === "small" ? "h-4 w-4" : size === "medium" ? "h-5 w-5" : "h-6 w-6"
+
+  return (
+    <TableCell
+      className="cursor-pointer"
+      onClick={() => {
+        onPreparePaste?.()
+        onUpload()
+      }}
+      onMouseEnter={() => {
+        onPreparePaste?.()
+      }}
+    >
+      {children}
+      {fileId && imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={columnName}
+          className="rounded border object-cover"
+          style={{ width: dimension, height: dimension }}
+          onError={(e) => {
+            // Fallback if image fails to load
+            e.currentTarget.style.display = "none"
+          }}
+        />
+      ) : (
+        <div
+          className="border-2 border-dashed rounded flex items-center justify-center text-muted-foreground"
+          style={{ width: dimension, height: dimension }}
+        >
+          <Upload className={iconClass} />
+        </div>
+      )}
+    </TableCell>
+  )
+}
 
 interface TradesTableProps {
   timeFilter: "day" | "week" | "month"
   pageSize: 10 | 30 | 50
   winLossFilter: "all" | "winners" | "losers"
+  customColumns?: Array<{
+    _id: Id<"customColumns">
+    columnId: string
+    name: string
+    type: "string" | "number" | "image"
+    order: number
+  }>
+  imageSize: "small" | "medium" | "large"
 }
 
-export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTableProps) {
+export function TradesTable({
+  timeFilter,
+  pageSize,
+  winLossFilter,
+  customColumns = [],
+  imageSize,
+}: TradesTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [editingTrade, setEditingTrade] = useState<any>(null)
+  const [editingCell, setEditingCell] = useState<{ tradeId: string; columnId: string } | null>(null)
+  const [editingValue, setEditingValue] = useState("")
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const [activeImageCell, setActiveImageCell] = useState<{ tradeId: string; columnId: string } | null>(null)
   
   // Get all trades from Convex
   const trades = useQuery(api.trades.getAllTrades) ?? []
   const deleteTrade = useMutation(api.trades.deleteTrade)
+  const updateTrade = useMutation(api.trades.updateTrade)
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
 
   // Filter trades based on time period and win/loss filter
   const filteredTrades = useMemo(() => {
@@ -89,6 +176,190 @@ export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTable
     }
   }
 
+  // Sort custom columns by order
+  const sortedColumns = useMemo(() => {
+    return [...customColumns].sort((a, b) => a.order - b.order)
+  }, [customColumns])
+
+  // Handle inline editing for string/number columns
+  const handleCellClick = (tradeId: string, columnId: string, currentValue: any, columnType: string) => {
+    if (columnType === "image") {
+      setActiveImageCell({ tradeId, columnId })
+      const input = fileInputRefs.current[`${tradeId}_${columnId}`]
+      input?.click()
+    } else {
+      // For string/number, start inline editing
+      setEditingCell({ tradeId, columnId })
+      setEditingValue(currentValue?.toString() || "")
+      setActiveImageCell(null)
+    }
+  }
+
+  const handleCellSave = async () => {
+    if (!editingCell) return
+
+    const column = sortedColumns.find((c) => c.columnId === editingCell.columnId)
+    if (!column) return
+
+    const trade = trades.find((t) => t._id === editingCell.tradeId)
+    if (!trade) return
+
+    const customData = { ...(trade.customData as Record<string, any> || {}) }
+    
+    if (column.type === "number") {
+      const numValue = Number.parseFloat(editingValue)
+      if (!Number.isNaN(numValue)) {
+        customData[editingCell.columnId] = numValue
+      } else {
+        delete customData[editingCell.columnId]
+      }
+    } else {
+      if (editingValue.trim()) {
+        customData[editingCell.columnId] = editingValue.trim()
+      } else {
+        delete customData[editingCell.columnId]
+      }
+    }
+
+    await updateTrade({
+      id: trade._id,
+      customData: Object.keys(customData).length > 0 ? customData : undefined,
+    })
+
+    setEditingCell(null)
+    setEditingValue("")
+  }
+
+  const handleImageUpload = async (tradeId: string, columnId: string, file: File) => {
+    try {
+      // Generate upload URL
+      const uploadUrl = await generateUploadUrl()
+      
+      // Upload the file to Convex storage
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      })
+      const { storageId } = await result.json()
+
+      // Update the trade with the new image file ID
+      const trade = trades.find((t) => t._id === tradeId)
+      if (!trade) return
+
+      const customData = { ...(trade.customData as Record<string, any> || {}) }
+      const oldFileId = customData[columnId]
+
+      customData[columnId] = storageId
+
+      await updateTrade({
+        id: trade._id,
+        customData,
+      })
+
+      // Note: Old file cleanup is handled by the updateTrade mutation in the backend
+      setActiveImageCell(null)
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      alert("Failed to upload image. Please try again.")
+    }
+  }
+
+  // Allow clipboard paste for image cells when a target is active
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      if (!activeImageCell) return
+      const clipboardItems = event.clipboardData?.items
+      if (!clipboardItems) return
+
+      const imageItem = Array.from(clipboardItems).find((item) => item.type.startsWith("image/"))
+      const file = imageItem?.getAsFile()
+      if (!file) return
+
+      event.preventDefault()
+      handleImageUpload(activeImageCell.tradeId, activeImageCell.columnId, file)
+    }
+
+    window.addEventListener("paste", handlePaste)
+    return () => window.removeEventListener("paste", handlePaste)
+  }, [activeImageCell, handleImageUpload])
+
+  const renderCustomCell = (trade: any, column: typeof sortedColumns[0]) => {
+    const customData = (trade.customData as Record<string, any>) || {}
+    const value = customData[column.columnId]
+    const isEditing = editingCell?.tradeId === trade._id && editingCell?.columnId === column.columnId
+
+    if (column.type === "image") {
+      // Image column - show thumbnail or upload button
+      return (
+        <ImageCell
+          key={column.columnId}
+          fileId={value as Id<"_storage"> | undefined}
+          columnName={column.name}
+          onUpload={() => {
+            const input = fileInputRefs.current[`${trade._id}_${column.columnId}`]
+            if (input) {
+              input.click()
+            }
+          }}
+          onPreparePaste={() => setActiveImageCell({ tradeId: trade._id, columnId: column.columnId })}
+          size={imageSize}
+        >
+          <input
+            ref={(el) => {
+              fileInputRefs.current[`${trade._id}_${column.columnId}`] = el
+            }}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                handleImageUpload(trade._id, column.columnId, file)
+              }
+            }}
+          />
+        </ImageCell>
+      )
+    } else if (isEditing) {
+      // Inline editing mode
+      return (
+        <TableCell key={column.columnId}>
+          <Input
+            type={column.type === "number" ? "number" : "text"}
+            value={editingValue}
+            onChange={(e) => setEditingValue(e.target.value)}
+            onBlur={handleCellSave}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleCellSave()
+              } else if (e.key === "Escape") {
+                setEditingCell(null)
+                setEditingValue("")
+              }
+            }}
+            autoFocus
+            className="h-8"
+            step={column.type === "number" ? "0.01" : undefined}
+          />
+        </TableCell>
+      )
+    } else {
+      // Display mode
+      return (
+        <TableCell
+          key={column.columnId}
+          className="cursor-pointer hover:bg-accent/50"
+          onClick={() => handleCellClick(trade._id, column.columnId, value, column.type)}
+        >
+          {column.type === "number" && value !== undefined
+            ? formatCurrency(value as number)
+            : value || "-"}
+        </TableCell>
+      )
+    }
+  }
+
   return (
     <>
       <Card className="p-6">
@@ -123,7 +394,7 @@ export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTable
         </div>
 
         {/* Table */}
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -132,13 +403,17 @@ export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTable
                 <TableHead>Ticker</TableHead>
                 <TableHead>P&L</TableHead>
                 <TableHead>Note</TableHead>
+                {/* Render custom column headers */}
+                {sortedColumns.map((column) => (
+                  <TableHead key={column.columnId}>{column.name}</TableHead>
+                ))}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentTrades.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6 + sortedColumns.length} className="text-center text-muted-foreground py-8">
                     No trades found for this period
                   </TableCell>
                 </TableRow>
@@ -160,6 +435,8 @@ export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTable
                       </span>
                     </TableCell>
                     <TableCell className="max-w-[300px] truncate">{trade.note || "-"}</TableCell>
+                    {/* Render custom column cells */}
+                    {sortedColumns.map((column) => renderCustomCell(trade, column))}
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" onClick={() => setEditingTrade(trade)}>
@@ -200,7 +477,12 @@ export function TradesTable({ timeFilter, pageSize, winLossFilter }: TradesTable
         )}
       </Card>
 
-      <EditTradeDialog trade={editingTrade} onClose={() => setEditingTrade(null)} />
+      <EditTradeDialog
+        trade={editingTrade}
+        onClose={() => setEditingTrade(null)}
+        customColumns={sortedColumns}
+        imageSize={imageSize}
+      />
     </>
   )
 }

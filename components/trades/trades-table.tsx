@@ -51,7 +51,7 @@ function ImageCell({
 
   return (
     <TableCell
-      className="cursor-pointer"
+      className="cursor-pointer text-center align-middle"
       onClick={() => {
         onPreparePaste?.()
         onUpload()
@@ -60,26 +60,28 @@ function ImageCell({
         onPreparePaste?.()
       }}
     >
+      <div className="flex justify-center">
+        {fileId && imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={columnName}
+            className="rounded border object-cover"
+            style={{ width: dimension, height: dimension }}
+            onError={(e) => {
+              // Fallback if image fails to load
+              e.currentTarget.style.display = "none"
+            }}
+          />
+        ) : (
+          <div
+            className="border-2 border-dashed rounded flex items-center justify-center text-muted-foreground"
+            style={{ width: dimension, height: dimension }}
+          >
+            <Upload className={iconClass} />
+          </div>
+        )}
+      </div>
       {children}
-      {fileId && imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={columnName}
-          className="rounded border object-cover"
-          style={{ width: dimension, height: dimension }}
-          onError={(e) => {
-            // Fallback if image fails to load
-            e.currentTarget.style.display = "none"
-          }}
-        />
-      ) : (
-        <div
-          className="border-2 border-dashed rounded flex items-center justify-center text-muted-foreground"
-          style={{ width: dimension, height: dimension }}
-        >
-          <Upload className={iconClass} />
-        </div>
-      )}
     </TableCell>
   )
 }
@@ -330,7 +332,7 @@ export function TradesTable({
     } else if (isEditing) {
       // Inline editing mode
       return (
-        <TableCell key={column.columnId}>
+        <TableCell key={column.columnId} className="text-center align-middle">
           <Input
             type={column.type === "number" ? "number" : "text"}
             value={editingValue}
@@ -345,7 +347,7 @@ export function TradesTable({
               }
             }}
             autoFocus
-            className="h-8"
+            className="h-8 text-center"
             step={column.type === "number" ? "0.01" : undefined}
           />
         </TableCell>
@@ -355,7 +357,7 @@ export function TradesTable({
       return (
         <TableCell
           key={column.columnId}
-          className="cursor-pointer hover:bg-accent/50"
+          className="cursor-pointer hover:bg-accent/50 text-center align-middle"
           onClick={() => handleCellClick(trade._id, column.columnId, value, column.type)}
         >
           {column.type === "number" && value !== undefined
@@ -404,16 +406,18 @@ export function TradesTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Ticker</TableHead>
-                <TableHead>P&L</TableHead>
+                <TableHead className="text-center">Date</TableHead>
+                <TableHead className="text-center">Time</TableHead>
+                <TableHead className="text-center">Ticker</TableHead>
+                <TableHead className="text-center">P&L</TableHead>
                 {/* Render custom column headers */}
                 {sortedColumns.map((column) => (
-                  <TableHead key={column.columnId}>{column.name}</TableHead>
+                  <TableHead key={column.columnId} className="text-center">
+                    {column.name}
+                  </TableHead>
                 ))}
-                <TableHead>Note</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-center">Note</TableHead>
+                <TableHead className="text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -426,12 +430,12 @@ export function TradesTable({
               ) : (
                 currentTrades.map((trade) => (
                   <TableRow key={trade._id}>
-                    <TableCell className="font-medium">{formatDate(trade.date)}</TableCell>
-                    <TableCell>{formatTime(trade.time)}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center font-medium">{formatDate(trade.date)}</TableCell>
+                    <TableCell className="text-center">{formatTime(trade.time)}</TableCell>
+                    <TableCell className="text-center">
                       <span className="font-semibold">{trade.ticker}</span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <span
                         className={`font-bold ${
                           trade.profitLoss > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
@@ -442,7 +446,7 @@ export function TradesTable({
                     </TableCell>
                     {/* Render custom column cells */}
                     {sortedColumns.map((column) => renderCustomCell(trade, column))}
-                    <TableCell className="max-w-[300px] truncate">{trade.note || "-"}</TableCell>
+                    <TableCell className="max-w-[300px] truncate text-center">{trade.note || "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" onClick={() => setEditingTrade(trade)}>

@@ -1,13 +1,24 @@
 "use client"
 
+import { format } from "date-fns"
+import { CalendarDays, Settings2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Settings2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
+
+type DateRangeValue = {
+  start: Date
+  end: Date
+}
 
 interface TradesFiltersProps {
-  timeFilter: "day" | "week" | "month"
-  onTimeFilterChange: (value: "day" | "week" | "month") => void
+  dateRange: DateRangeValue
+  onStartDateChange: (value: string) => void
+  onEndDateChange: (value: string) => void
+  onSelectWeek: () => void
+  onSelectMonth: () => void
   pageSize: 10 | 30 | 50
   onPageSizeChange: (value: 10 | 30 | 50) => void
   winLossFilter: "all" | "winners" | "losers"
@@ -18,8 +29,11 @@ interface TradesFiltersProps {
 }
 
 export function TradesFilters({ 
-  timeFilter, 
-  onTimeFilterChange, 
+  dateRange,
+  onStartDateChange,
+  onEndDateChange,
+  onSelectWeek,
+  onSelectMonth,
   pageSize, 
   onPageSizeChange,
   winLossFilter,
@@ -28,20 +42,46 @@ export function TradesFilters({
   onImageSizeChange,
   onManageColumns
 }: TradesFiltersProps) {
+
+  const rangeLabel = `${format(dateRange.start, "MMM d, yyyy")} - ${format(dateRange.end, "MMM d, yyyy")}`
+
   return (
     <div className="flex flex-wrap items-end gap-4">
       <div className="space-y-2">
-        <Label>Time Period</Label>
-        <Select value={timeFilter} onValueChange={(v) => onTimeFilterChange(v as "day" | "week" | "month")}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="day">Today</SelectItem>
-            <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-          </SelectContent>
-        </Select>
+        <Label>Date Range (max 30 days)</Label>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{rangeLabel}</span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              type="date"
+              value={format(dateRange.start, "yyyy-MM-dd")}
+              onChange={(e) => onStartDateChange(e.target.value)}
+              max={format(dateRange.end, "yyyy-MM-dd")}
+              className="w-[160px]"
+            />
+            <Input
+              type="date"
+              value={format(dateRange.end, "yyyy-MM-dd")}
+              onChange={(e) => onEndDateChange(e.target.value)}
+              min={format(dateRange.start, "yyyy-MM-dd")}
+              className="w-[160px]"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={onSelectWeek}>
+              This Week
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onSelectMonth}>
+              This Month
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Select up to 30 days inclusive.</p>
+        </div>
       </div>
 
       <div className="space-y-2">

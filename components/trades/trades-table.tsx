@@ -77,8 +77,13 @@ function ImageCell({
   )
 }
 
+type DateRangeValue = {
+  start: Date
+  end: Date
+}
+
 interface TradesTableProps {
-  timeFilter: "day" | "week" | "month"
+  dateRange: DateRangeValue
   pageSize: 10 | 30 | 50
   winLossFilter: "all" | "winners" | "losers"
   customColumns?: Array<{
@@ -92,7 +97,7 @@ interface TradesTableProps {
 }
 
 export function TradesTable({
-  timeFilter,
+  dateRange,
   pageSize,
   winLossFilter,
   customColumns = [],
@@ -111,25 +116,15 @@ export function TradesTable({
   const updateTrade = useMutation(api.trades.updateTrade)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
 
-  // Filter trades based on time period and win/loss filter
+  // Filter trades based on selected date range and win/loss filter
   const filteredTrades = useMemo(() => {
-    const now = new Date()
-    let startDate: Date
+    const startDate = dateRange.start
+    const endDate = dateRange.end
 
-    switch (timeFilter) {
-      case "day":
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        break
-      case "week":
-        startDate = new Date(now)
-        startDate.setDate(now.getDate() - now.getDay() + 1) // Monday
-        break
-      case "month":
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-        break
-    }
-
-    let filtered = trades.filter((trade) => new Date(trade.date) >= startDate)
+    let filtered = trades.filter((trade) => {
+      const tradeDate = new Date(trade.date)
+      return tradeDate >= startDate && tradeDate <= endDate
+    })
 
     // Apply win/loss filter
     switch (winLossFilter) {
@@ -145,12 +140,12 @@ export function TradesTable({
     }
 
     return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [timeFilter, winLossFilter, trades])
+  }, [dateRange, winLossFilter, trades])
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [timeFilter, winLossFilter, pageSize])
+  }, [dateRange, winLossFilter, pageSize])
 
   // Pagination
   const totalPages = Math.ceil(filteredTrades.length / pageSize)

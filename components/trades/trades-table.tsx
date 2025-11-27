@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { formatCurrency, formatDate, formatTime } from "@/lib/utils"
-import { ChevronLeft, ChevronRight, Edit2, Trash2, Upload } from "lucide-react"
+import { cn, formatCurrency, formatDate, formatTime } from "@/lib/utils"
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Edit2, Trash2, Upload } from "lucide-react"
 import { EditTradeDialog } from "@/components/trades/edit-trade-dialog"
 import { Id } from "@/convex/_generated/dataModel"
 
@@ -120,6 +120,7 @@ export function TradesTable({
   const [editingValue, setEditingValue] = useState("")
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const [activeImageCell, setActiveImageCell] = useState<{ tradeId: string; columnId: string } | null>(null)
+  const [notesExpanded, setNotesExpanded] = useState(false)
   
   // Get all trades from Convex
   const trades = useQuery(api.trades.getAllTrades) ?? []
@@ -182,6 +183,10 @@ export function TradesTable({
     if (confirm("Are you sure you want to delete this trade?")) {
       await deleteTrade({ id: tradeId as any })
     }
+  }
+
+  const toggleAllNotes = () => {
+    setNotesExpanded((prev) => !prev)
   }
 
   // Sort custom columns by order
@@ -417,7 +422,20 @@ export function TradesTable({
                     {column.name}
                   </TableHead>
                 ))}
-                <TableHead className="text-center">Note</TableHead>
+                <TableHead className="text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <span>Note</span>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="h-6 w-6"
+                      onClick={toggleAllNotes}
+                      aria-label={notesExpanded ? "Collapse notes" : "Expand notes"}
+                    >
+                      {notesExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </TableHead>
                 <TableHead className="text-right"></TableHead>
               </TableRow>
             </TableHeader>
@@ -452,7 +470,20 @@ export function TradesTable({
                     </TableCell>
                     {/* Render custom column cells */}
                     {sortedColumns.map((column) => renderCustomCell(trade, column))}
-                    <TableCell className="max-w-[300px] truncate text-center">{trade.note || "-"}</TableCell>
+                    <TableCell className="w-[200px] text-center align-middle">
+                      {trade.note ? (
+                        <div
+                          className={cn(
+                            "text-sm whitespace-pre-wrap break-words",
+                            notesExpanded ? "" : "line-clamp-2"
+                          )}
+                        >
+                          {trade.note}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" onClick={() => setEditingTrade(trade)}>

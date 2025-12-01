@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { formatCurrency, formatDate, formatDateISO } from "@/lib/utils"
+import { formatCurrency, formatDate, formatDateISO, isLosingTrade, isWinningTrade } from "@/lib/utils"
 import { useMemo } from "react"
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { TrendingDown, TrendingUp, ArrowUpRight, ArrowDownRight, DollarSign } from "lucide-react"
@@ -72,21 +72,21 @@ export function TradingMetrics({ timeframe }: TradingMetricsProps) {
   // Calculate Long Won (count of winning long trades)
   const longWon = useMemo(() => {
     return trades.filter(
-      (trade) => trade.type === "long" && trade.profitLoss > 0
+      (trade) => trade.type === "long" && isWinningTrade(trade.profitLoss)
     ).length
   }, [trades])
 
   // Calculate Short Won (count of winning short trades)
   const shortWon = useMemo(() => {
     return trades.filter(
-      (trade) => trade.type === "short" && trade.profitLoss > 0
+      (trade) => trade.type === "short" && isWinningTrade(trade.profitLoss)
     ).length
   }, [trades])
 
   // Calculate Gross Profit (sum of all positive profitLoss values)
   const grossProfit = useMemo(() => {
     return trades
-      .filter((trade) => trade.profitLoss > 0)
+      .filter((trade) => isWinningTrade(trade.profitLoss))
       .reduce((sum, trade) => sum + trade.profitLoss, 0)
   }, [trades])
 
@@ -94,7 +94,7 @@ export function TradingMetrics({ timeframe }: TradingMetricsProps) {
   const grossLoss = useMemo(() => {
     return Math.abs(
       trades
-        .filter((trade) => trade.profitLoss < 0)
+        .filter((trade) => isLosingTrade(trade.profitLoss))
         .reduce((sum, trade) => sum + trade.profitLoss, 0)
     )
   }, [trades])

@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
+import { isLosingTrade, isWinningTrade } from "@/lib/utils"
 
 export function WinLossChart() {
   const trades = useQuery(api.trades.getAllTrades) ?? []
-  const winningTrades = trades.filter((t) => t.profitLoss > 0)
-  const losingTrades = trades.filter((t) => t.profitLoss < 0)
+  const winningTrades = trades.filter((t) => isWinningTrade(t.profitLoss))
+  const losingTrades = trades.filter((t) => isLosingTrade(t.profitLoss))
 
   const avgWin = winningTrades.reduce((sum, t) => sum + t.profitLoss, 0) / winningTrades.length
   const avgLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.profitLoss, 0) / losingTrades.length)

@@ -7,7 +7,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { cn, formatCurrency, formatDate, formatTime } from "@/lib/utils"
+import {
+  cn,
+  formatCurrency,
+  formatDate,
+  formatTime,
+  getTradeOutcome,
+  isLosingTrade,
+  isWinningTrade,
+} from "@/lib/utils"
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Edit2, Trash2, Upload } from "lucide-react"
 import { EditTradeDialog } from "@/components/trades/edit-trade-dialog"
 import { Id } from "@/convex/_generated/dataModel"
@@ -143,10 +151,11 @@ export function TradesTable({
     // Apply win/loss filter
     switch (winLossFilter) {
       case "winners":
-        filtered = filtered.filter((trade) => trade.profitLoss > 0)
+        // Using the helper keeps the breakeven tolerance in sync everywhere.
+        filtered = filtered.filter((trade) => isWinningTrade(trade.profitLoss))
         break
       case "losers":
-        filtered = filtered.filter((trade) => trade.profitLoss < 0)
+        filtered = filtered.filter((trade) => isLosingTrade(trade.profitLoss))
         break
       case "all":
         // No additional filtering needed
@@ -176,8 +185,8 @@ export function TradesTable({
   }
 
   const totalPnL = filteredTrades.reduce((sum, trade) => sum + trade.profitLoss, 0)
-  const winningTrades = filteredTrades.filter((t) => t.profitLoss > 0).length
-  const losingTrades = filteredTrades.filter((t) => t.profitLoss < 0).length
+  const winningTrades = filteredTrades.filter((t) => isWinningTrade(t.profitLoss)).length
+  const losingTrades = filteredTrades.filter((t) => isLosingTrade(t.profitLoss)).length
 
   const handleDeleteTrade = async (tradeId: string) => {
     if (confirm("Are you sure you want to delete this trade?")) {
@@ -460,13 +469,20 @@ export function TradesTable({
                       <span className="font-semibold">{trade.ticker}</span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span
-                        className={`font-bold ${
-                          trade.profitLoss > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                        }`}
-                      >
+                      {(() => {
+                        const outcome = getTradeOutcome(trade.profitLoss)
+                        const outcomeClass =
+                          outcome === "win"
+                            ? "text-green-600 dark:text-green-400"
+                            : outcome === "loss"
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-muted-foreground"
+                        return (
+                          <span className={`font-bold ${outcomeClass}`}>
                         {formatCurrency(trade.profitLoss)}
-                      </span>
+                          </span>
+                        )
+                      })()}
                     </TableCell>
                     {/* Render custom column cells */}
                     {sortedColumns.map((column) => renderCustomCell(trade, column))}

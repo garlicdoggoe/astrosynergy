@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { formatCurrency, formatDate, formatTime } from "@/lib/utils"
+import { formatCurrency, formatDate, formatTime, getTradeOutcome } from "@/lib/utils"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Plus, Trash2 } from "lucide-react"
@@ -114,15 +114,20 @@ export function TradeDialog({ selectedDate, onClose }: TradeDialogProps) {
                         <span className="text-xs font-semibold uppercase rounded-full px-2 py-0.5 bg-muted text-muted-foreground">
                           {trade.type}
                         </span>
-                        <span
-                          className={`font-semibold ${
-                            trade.profitLoss > 0
+                        {(() => {
+                          const outcome = getTradeOutcome(trade.profitLoss)
+                          const outcomeClass =
+                            outcome === "win"
                               ? "text-green-600 dark:text-green-400"
-                              : "text-red-600 dark:text-red-400"
-                          }`}
-                        >
+                              : outcome === "loss"
+                                ? "text-red-600 dark:text-red-400"
+                                : "text-muted-foreground"
+                          return (
+                            <span className={`font-semibold ${outcomeClass}`}>
                           {formatCurrency(trade.profitLoss)}
-                        </span>
+                            </span>
+                          )
+                        })()}
                       </div>
                       {trade.note && <p className="text-sm text-muted-foreground">{trade.note}</p>}
                     </div>

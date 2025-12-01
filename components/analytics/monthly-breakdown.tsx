@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, isWinningTrade } from "@/lib/utils"
 
 export function MonthlyBreakdown() {
   // Get all trades from Convex
@@ -18,7 +18,7 @@ export function MonthlyBreakdown() {
       }
       acc[month].total += trade.profitLoss
       acc[month].count += 1
-      if (trade.profitLoss > 0) acc[month].wins += 1
+      if (isWinningTrade(trade.profitLoss)) acc[month].wins += 1
       return acc
     },
     {} as Record<string, { total: number; count: number; wins: number }>,

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, isBreakEvenTrade, isLosingTrade, isWinningTrade } from "@/lib/utils"
 
 interface PerformanceSummaryProps {
   timeframe: "day" | "week" | "month" | "year" | "all"
@@ -14,9 +14,9 @@ export function PerformanceSummary({ timeframe }: PerformanceSummaryProps) {
   const trades = useQuery(api.trades.getAllTrades) ?? []
 
   const netProfit = trades.reduce((sum, t) => sum + t.profitLoss, 0)
-  const winningTrades = trades.filter((t) => t.profitLoss > 0)
-  const losingTrades = trades.filter((t) => t.profitLoss < 0)
-  const breakEvenTrades = trades.filter((t) => t.profitLoss === 0)
+  const winningTrades = trades.filter((t) => isWinningTrade(t.profitLoss))
+  const losingTrades = trades.filter((t) => isLosingTrade(t.profitLoss))
+  const breakEvenTrades = trades.filter((t) => isBreakEvenTrade(t.profitLoss))
 
   const totalProfit = winningTrades.reduce((sum, t) => sum + t.profitLoss, 0)
   const totalLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.profitLoss, 0))

@@ -17,6 +17,38 @@ export function formatDate(date: string): string {
   })
 }
 
+/**
+ * Trades within this absolute dollar range are considered breakeven.
+ * Keeping the threshold centralized ensures every viewer stays perfectly aligned.
+ */
+export const BREAKEVEN_THRESHOLD = 5
+
+export type TradeOutcome = "win" | "loss" | "breakeven"
+
+/**
+ * Classifies a trade using the global breakeven tolerance.
+ * Doing the math once here reduces mistakes in downstream analytics.
+ */
+export function getTradeOutcome(profitLoss: number): TradeOutcome {
+  if (Math.abs(profitLoss) <= BREAKEVEN_THRESHOLD) {
+    return "breakeven"
+  }
+  return profitLoss > 0 ? "win" : "loss"
+}
+
+// Convenience wrappers read clearer at call sites than repeating comparisons.
+export function isWinningTrade(profitLoss: number): boolean {
+  return getTradeOutcome(profitLoss) === "win"
+}
+
+export function isLosingTrade(profitLoss: number): boolean {
+  return getTradeOutcome(profitLoss) === "loss"
+}
+
+export function isBreakEvenTrade(profitLoss: number): boolean {
+  return getTradeOutcome(profitLoss) === "breakeven"
+}
+
 export function getWeekNumber(date: Date): number {
   const firstDayOfYear = new Date(date.getFullYear(), 0, 1)
   const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000

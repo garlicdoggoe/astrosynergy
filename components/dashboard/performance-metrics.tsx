@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { isLosingTrade, isWinningTrade } from "@/lib/utils"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { TrendingUp, TrendingDown, Target, Award, AlertCircle } from "lucide-react"
@@ -13,8 +14,8 @@ export function PerformanceMetrics({ timeframe }: PerformanceMetricsProps) {
   // Get all trades from Convex - in a real app, you might want to filter by timeframe
   const trades = useQuery(api.trades.getAllTrades) ?? []
 
-  const winningTrades = trades.filter((t) => t.profitLoss > 0)
-  const losingTrades = trades.filter((t) => t.profitLoss < 0)
+  const winningTrades = trades.filter((t) => isWinningTrade(t.profitLoss))
+  const losingTrades = trades.filter((t) => isLosingTrade(t.profitLoss))
 
   const totalProfit = winningTrades.reduce((sum, t) => sum + t.profitLoss, 0)
   const totalLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.profitLoss, 0))
